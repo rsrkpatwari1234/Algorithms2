@@ -1,0 +1,66 @@
+6 9
+-5 2 0 7 -4 0
+1 2 7
+3 1 12
+2 3 10
+1 3 12
+5 3 6
+1 6 2
+6 4 3
+3 4 5
+3 2 3
+//Performing dfs for finding all possible augmenting paths 
+//Finally storing smallest length augmenting path with maximum residual capacity
+void dfs(GRAPH *graph, int src, int dest, int currLen, int **resCapacity,int currCapacity, int parent[], int currParent[], int **len, int visited[]){
+	//base case
+	if(currLen > (**len))		//ignoring paths of greater length than current path lenght
+		return;
+
+	if(src == dest){			//destination is reached
+		if(currLen < (**len)){	//shorter augmenting path is obtained
+			**len = currLen;		
+			**resCapacity = currCapacity;
+			for(int i=0;i<=(graph->V+1);i++){		//updating parents for final path 
+				parent[i] = currParent[i];
+			}
+		}
+		else if(currLen == (**len) && currCapacity>(**resCapacity)){ 
+			**resCapacity = currCapacity;  //same length higher residual capacity path is obtained
+			for(int i=0;i<=(graph->V+1);i++){
+				parent[i] = currParent[i];			//updating parents for final path
+			}	
+		}
+		return;
+	}
+
+	//recursive case
+	visited[src] = 1;					 //setting visited as 1 
+	EDGE *curr = graph->H[src].p;
+	int tempCapacity,residual;
+	while(curr != NULL){
+		residual = curr->c - curr->f;				//residual capacity
+		if(!visited[curr->y] && residual > 0){		//visit edges that are not visited and have residual capacity>0
+			tempCapacity = min(currCapacity, curr->c);
+			currParent[curr->y] = src;
+			dfs(graph, curr->y, dest, currLen+1, resCapacity, tempCapacity, parent, currParent, len, visited);
+		}
+		curr = curr->next;							//moving to other edge in the linked list
+	}
+	visited[src] = 0;					//setting visited as 0
+}
+
+void dfsUtil(GRAPH *graph, int src, int dest, int *resCapacity, int parent[], int *len){
+
+	int V=graph->V;
+	int visited[V+2];
+	int currParent[V+2];
+
+	for(int i=0;i<=V+1;i++){
+		visited[i] = 0;
+		currParent[i] = -1;
+	}
+	//calling dfs for checking all possible paths between src and dest
+	dfs(graph, src, dest, 0, &resCapacity, INT_MAX, parent, currParent, &len, visited);
+}
+
+//--------------------------------------------------------------------
